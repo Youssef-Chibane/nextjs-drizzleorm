@@ -1,30 +1,11 @@
+import { db } from "@/db";
+import { posts } from "@/db/schema";
+import { desc } from "drizzle-orm";
 import Link from "next/link";
 
-const allPosts = [
-  {
-    id: 1,
-    title: "Introduction to JavaScript",
-    createdAt: "2025-05-01T10:00:00Z",
-    content:
-      "JavaScript is a versatile programming language used primarily for web development...",
-  },
-  {
-    id: 2,
-    title: "Understanding React Hooks",
-    createdAt: "2025-05-03T14:30:00Z",
-    content:
-      "React Hooks allow you to use state and lifecycle features in functional components...",
-  },
-  {
-    id: 3,
-    title: "Getting Started with Next.js",
-    createdAt: "2025-05-04T09:15:00Z",
-    content:
-      "Next.js is a React framework that enables server-side rendering and static site generation...",
-  },
-];
+export default async function Home() {
+  const allPosts = await db.select().from(posts).orderBy(desc(posts.createdAt));
 
-export default function Home() {
   return (
     <div>
       <h1 className="text-3xl font-bold mb-4">My Blog</h1>

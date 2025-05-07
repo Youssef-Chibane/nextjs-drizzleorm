@@ -1,21 +1,50 @@
+import { db } from "@/db";
+import { posts } from "@/db/schema";
+import { eq } from "drizzle-orm";
+import { revalidatePath } from "next/cache";
 import Link from "next/link";
+import { notFound, redirect } from "next/navigation";
 
-const post = {
-  id: 1,
-  title: "Introduction to JavaScript",
-  createdAt: "2025-05-01T10:00:00Z",
-  content:
-    "JavaScript is a versatile programming language used primarily for web development.",
-};
+export default async function page({
+  params,
+}: {
+  params: {
+    id: string;
+  };
+}) {
+  const post = await db
+    .select()
+    .from(posts)
+    .where(eq(posts.id, Number.parseInt(params.id)))
+    .then((res) => res[0]);
 
-export default function page() {
+  if (!post) {
+    return notFound();
+  }
+
+  async function updatePost(formData: FormData) {
+    "use server";
+    const title = formData.get("title") as string;
+    const content = formData.get("content") as string;
+
+    await db
+      .update(posts)
+      .set({ title, content, updatedAt: new Date().toISOString() })
+      .where(eq(posts.id, post.id));
+    revalidatePath("/");
+    redirect("/");
+  }
+
   return (
     <div>
-      <Link href="/" className="text-blue-500 mb-4 inline-block">
+      <Link
+        href={`/post/${params.id}`}
+        className="text-blue-500 mb-4 inline-block"
+      >
         &larr; Go back
       </Link>
       <h1 className="text-2xl font-bold mb-4">Edit Post</h1>
-      <form>
+      <form action={updatePost}>
         <div className="mb-4">
           <label htmlFor="title" className="block mb-2">
             Title

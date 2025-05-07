@@ -1,14 +1,25 @@
+import { db } from "@/db";
+import { posts } from "@/db/schema";
+import { eq } from "drizzle-orm";
 import Link from "next/link";
+import { notFound } from "next/navigation";
 
-const post = {
-  id: 1,
-  title: "Introduction to JavaScript",
-  createdAt: "2025-05-01T10:00:00Z",
-  content:
-    "JavaScript is a versatile programming language used primarily for web development.",
-};
+export default async function page({
+  params,
+}: {
+  params: {
+    id: string;
+  };
+}) {
+  const post = await db
+    .select()
+    .from(posts)
+    .where(eq(posts.id, Number.parseInt(params.id)))
+    .then((res) => res[0]);
 
-export default function page() {
+  if (!post) {
+    return notFound();
+  }
   return (
     <div>
       <Link href="/" className="text-blue-500 mb-4 inline-block">

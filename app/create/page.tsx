@@ -1,4 +1,18 @@
+import { db } from "@/db";
+import { posts } from "@/db/schema";
+import { revalidatePath } from "next/cache";
 import Link from "next/link";
+import { redirect } from "next/navigation";
+
+async function createPost(formData: FormData) {
+  "use server";
+  const title = formData.get("title") as string;
+  const content = formData.get("content") as string;
+
+  await db.insert(posts).values({ title, content });
+  revalidatePath("/");
+  redirect("/");
+}
 
 export default function page() {
   return (
@@ -7,7 +21,7 @@ export default function page() {
         &larr; Go back
       </Link>
       <h1 className="text-2xl font-bold mb-4">Create New Post</h1>
-      <form>
+      <form action={createPost}>
         <div className="mb-4">
           <label htmlFor="title" className="block mb-2">
             Title
